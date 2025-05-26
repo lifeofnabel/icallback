@@ -112,15 +112,10 @@ const BookingForm: React.FC = () => {
 
   useEffect(() => {
     if (step === 'verifyPhone' && !otpSent) {
-        // Ensure #recaptcha-container is in the DOM before setting up.
-        const recaptchaContainer = document.getElementById('recaptcha-container');
-        if (recaptchaContainer && auth) { // Also check auth here for safety
-            setupRecaptcha();
-        } else if (!auth) {
-            toast({ variant: "destructive", title: t('error'), description: t('firebaseServicesUnavailable') });
-        } else {
-            console.warn("Skipping reCAPTCHA setup: container not found yet or auth not ready.");
-        }
+      const recaptchaContainer = document.getElementById('recaptcha-container');
+      if (recaptchaContainer && auth) {
+        setupRecaptcha();
+      }
     }
   }, [step, otpSent, setupRecaptcha]);
 
@@ -137,6 +132,7 @@ const BookingForm: React.FC = () => {
     setIsSendingOtp(true);
     try {
       if (!window.recaptchaVerifier) {
+        if (window.recaptchaVerifier) return; // schon gesetzt, kein zweites Mal
         setupRecaptcha(); // Attempt to set it up if not already
       }
 
@@ -296,13 +292,29 @@ const BookingForm: React.FC = () => {
             <CardContent className="space-y-4">
               {!otpSent ? (
                 <>
-                  <Input
-                    type="tel"
-                    placeholder={t('phoneNumber') + " (e.g. +491234567890)"}
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                    dir="ltr" 
-                  />
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 select-none">+49</span>
+                    <Input
+                        type="tel"
+                        placeholder="15712345678"
+                        value={phoneNumber.replace('+49', '')}
+                        onChange={(e) => {
+                          let raw = e.target.value;
+                          raw = raw.replace(/\D/g, ''); // Nur Ziffern
+                          if (raw.startsWith('0')) raw = raw.slice(1); // Wenn mit 0 beginnt, entferne sie
+                          setPhoneNumber(`+49${raw}`);
+                        }}
+                        className="pl-14"
+                        dir="ltr"
+                        onKeyDown={(e) => {
+                          if (!/[0-9]/.test(e.key) && e.key !== 'Backspace' && e.key !== 'Delete' && e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') {
+                            e.preventDefault();
+                          }
+                        }}
+
+                    />
+                  </div>
+
                   <Button onClick={handleSendOtp} disabled={isSendingOtp || !phoneNumber} className="w-full">
                     {isSendingOtp && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     {t('sendCode')}
