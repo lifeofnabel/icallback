@@ -26,6 +26,7 @@
   "noAvailableWeekdays": "لا توجد أيام عمل متاحة للحجز في المستقبل القريب.",
   "pleaseSelectDateAndTime": "الرجاء اختيار التاريخ والوقت.",
   "pleaseVerifyPhoneNumber": "يرجى التحقق من رقم هاتفك.",
+  "firebaseServicesUnavailable": "خدمات Firebase غير متوفرة حاليًا. يرجى المحاولة مرة أخرى لاحقًا أو الاتصال بالدعم.",
   "steps": {
     "selectDateTime": "اختر التاريخ والوقت",
     "verifyPhone": "تحقق من الهاتف",
@@ -36,3 +37,4 @@
   "arabic": "عربي",
   "english": "إنجليزي"
 }
+

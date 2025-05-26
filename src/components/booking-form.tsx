@@ -13,7 +13,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Loader2, CheckCircle, XCircle, CalendarIcon, ClockIcon, PhoneIcon, ShieldCheckIcon } from 'lucide-react';
 import { RecaptchaVerifier, signInWithPhoneNumber, type ConfirmationResult } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { auth } from '@/lib/firebase'; // auth can be undefined if Firebase init fails
 import { getBookedSlots, createBookingAction } from '@/actions/booking-actions';
 import type { BookingStep } from '@/types';
 import { useToast } from "@/hooks/use-toast";
@@ -74,49 +74,90 @@ const BookingForm: React.FC = () => {
   }, [selectedDate, t, toast]);
   
   const setupRecaptcha = useCallback(() => {
-    if (!window.recaptchaVerifier && auth) {
-      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-        'size': 'invisible',
-        'callback': (response: any) => {
-          // reCAPTCHA solved, allow signInWithPhoneNumber.
-        },
-        'expired-callback': () => {
-          // Response expired. Ask user to solve reCAPTCHA again.
-           toast({ variant: "destructive", title: t('error'), description: "Recaptcha expired, please try again." });
-        }
-      });
+    if (!auth) {
+      toast({ variant: "destructive", title: t('error'), description: t('firebaseServicesUnavailable') });
+      return;
     }
-  }, [t, toast]);
+    const recaptchaContainer = document.getElementById('recaptcha-container');
+    if (!recaptchaContainer) {
+        console.warn("Recaptcha container not found. Deferring setup.");
+        // A toast here might be too noisy if it's a timing issue with DOM rendering.
+        // The handleSendOtp logic will catch if verifier is still not set.
+        return;
+    }
+
+    if (!window.recaptchaVerifier) {
+      try {
+        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+          'size': 'invisible',
+          'callback': (response: any) => {
+            // reCAPTCHA solved, allow signInWithPhoneNumber.
+          },
+          'expired-callback': () => {
+            toast({ variant: "destructive", title: t('error'), description: "Recaptcha expired, please try again." });
+            // Potentially reset or clear the verifier
+            if (window.recaptchaVerifier) {
+              // @ts-ignore
+              try{ window.grecaptcha.reset(window.recaptchaVerifier.widgetId); } catch(e){ console.warn("Failed to reset recaptcha widget", e)}
+            }
+          }
+        });
+      } catch (error) {
+        console.error("Error setting up RecaptchaVerifier: ", error);
+        toast({ variant: "destructive", title: t('error'), description: "Failed to initialize Recaptcha. Please refresh and try again." });
+        window.recaptchaVerifier = undefined; // Ensure it's undefined on failure
+      }
+    }
+  }, [t, toast]); // auth is a stable import
 
   useEffect(() => {
-    // Only setup recaptcha if we are on the phone verification step and it's not already set up
     if (step === 'verifyPhone' && !otpSent) {
-        setupRecaptcha();
+        // Ensure #recaptcha-container is in the DOM before setting up.
+        const recaptchaContainer = document.getElementById('recaptcha-container');
+        if (recaptchaContainer && auth) { // Also check auth here for safety
+            setupRecaptcha();
+        } else if (!auth) {
+            toast({ variant: "destructive", title: t('error'), description: t('firebaseServicesUnavailable') });
+        } else {
+            console.warn("Skipping reCAPTCHA setup: container not found yet or auth not ready.");
+        }
     }
   }, [step, otpSent, setupRecaptcha]);
 
 
   const handleSendOtp = async () => {
-    if (!phoneNumber.match(/^\+[1-9]\d{1,14}$/)) { // Basic E.164 format validation
+    if (!auth) {
+      toast({ variant: "destructive", title: t('error'), description: t('firebaseServicesUnavailable') });
+      return;
+    }
+    if (!phoneNumber.match(/^\+[1-9]\d{1,14}$/)) { 
       toast({ variant: "destructive", title: t('error'), description: t('invalidPhoneNumber') });
       return;
     }
     setIsSendingOtp(true);
     try {
-      if(!window.recaptchaVerifier) setupRecaptcha(); // Ensure it's set up
-      const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, window.recaptchaVerifier!);
+      if (!window.recaptchaVerifier) {
+        setupRecaptcha(); // Attempt to set it up if not already
+      }
+
+      if (!window.recaptchaVerifier) {
+        // If setupRecaptcha failed (e.g. auth was null, or container issue), it won't be set.
+        console.error("reCAPTCHA verifier not available for sending OTP.");
+        toast({ variant: "destructive", title: t('error'), description: t('verificationFailed') }); // A more specific message might be in setupRecaptcha
+        setIsSendingOtp(false);
+        return;
+      }
+
+      const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, window.recaptchaVerifier);
       window.confirmationResult = confirmationResult;
       setOtpSent(true);
       toast({ title: t('smsSent') });
     } catch (error: any) {
       console.error("Error sending OTP:", error);
       toast({ variant: "destructive", title: t('error'), description: error.message || t('verificationFailed') });
-      // Reset reCAPTCHA if error (e.g. too many requests)
       if (window.recaptchaVerifier) {
-        window.recaptchaVerifier.render().then(widgetId => {
-          // @ts-ignore
-          grecaptcha.reset(widgetId);
-        });
+        // @ts-ignore
+        try { window.grecaptcha.reset(window.recaptchaVerifier.widgetId); } catch(e){console.warn("Failed to reset recaptcha on error", e)}
       }
     } finally {
       setIsSendingOtp(false);
@@ -124,17 +165,21 @@ const BookingForm: React.FC = () => {
   };
 
   const handleVerifyOtp = async () => {
+    if (!window.confirmationResult) {
+      toast({ variant: "destructive", title: t('error'), description: t('verificationFailed') + " (No confirmation result)"}); // TODO: Translate
+      return;
+    }
     if (!otp || otp.length !== 6) {
       toast({ variant: "destructive", title: t('error'), description: t('verificationFailed') });
       return;
     }
     setIsVerifyingOtp(true);
     try {
-      const userCredential = await window.confirmationResult!.confirm(otp);
+      const userCredential = await window.confirmationResult.confirm(otp);
       setIsVerified(true);
       setUserId(userCredential.user.uid);
       toast({ title: t('verificationCode'), description: "Phone number verified successfully!" }); // TODO: Translate
-      setStep('confirmation'); // Or directly to booking
+      setStep('confirmation'); 
     } catch (error: any) {
       console.error("Error verifying OTP:", error);
       toast({ variant: "destructive", title: t('error'), description: error.message || t('verificationFailed') });
@@ -165,7 +210,6 @@ const BookingForm: React.FC = () => {
         phoneLastFour: phoneNumber.slice(-4)
       });
       setShowConfirmationDialog(true);
-      // Reset form for next booking
       setSelectedDate(undefined);
       setSelectedTime(undefined);
       setPhoneNumber('');
@@ -173,7 +217,7 @@ const BookingForm: React.FC = () => {
       setOtpSent(false);
       setIsVerified(false);
       setStep('selectDateTime');
-      setBookedSlotsForSelectedDate(prev => [...prev, selectedTime]); // Optimistically update UI
+      setBookedSlotsForSelectedDate(prev => [...prev, selectedTime]); 
     } else {
        toast({ variant: "destructive", title: t('error'), description: t(result.errorCode || 'bookingFailed') });
     }
@@ -194,7 +238,7 @@ const BookingForm: React.FC = () => {
                 selected={selectedDate}
                 onSelect={setSelectedDate}
                 fromDate={new Date()}
-                toDate={addDays(new Date(), 30)} // Allow booking for next 30 days
+                toDate={addDays(new Date(), 30)} 
                 disabled={(date) => isWeekend(date) || date < new Date(new Date().setHours(0,0,0,0))}
                 className="rounded-md border shadow"
                 dir={dir}
@@ -257,7 +301,7 @@ const BookingForm: React.FC = () => {
                     placeholder={t('phoneNumber') + " (e.g. +491234567890)"}
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
-                    dir="ltr" // Phone numbers are typically LTR
+                    dir="ltr" 
                   />
                   <Button onClick={handleSendOtp} disabled={isSendingOtp || !phoneNumber} className="w-full">
                     {isSendingOtp && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -293,7 +337,7 @@ const BookingForm: React.FC = () => {
             </CardFooter>
           </Card>
         );
-       case 'confirmation': // Fallback for direct jump after verification, booking button handles this
+       case 'confirmation': 
         return (
            <Card>
             <CardHeader>
@@ -307,6 +351,7 @@ const BookingForm: React.FC = () => {
                 <CheckCircle className="h-5 w-5 text-accent" />
                 <AlertTitle className="text-accent">{t('verificationCode')}</AlertTitle>
                 <AlertDescription>
+                  {/* TODO: Translate "Phone number verified. You can now book your appointment." */}
                   Phone number verified. You can now book your appointment.
                 </AlertDescription>
               </Alert>
@@ -325,7 +370,6 @@ const BookingForm: React.FC = () => {
     }
   };
 
-  // Helper icon for LTR/RTL arrows
   const ArrowRightIcon = ({className}: {className?: string}) => dir === 'rtl' ? <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg> : <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>;
   const ArrowLeftIcon = ({className}: {className?: string}) => dir === 'rtl' ? <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg> : <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>;
 
@@ -360,7 +404,6 @@ const BookingForm: React.FC = () => {
   );
 };
 
-// Small helper to simulate addDays because date-fns might not be tree-shaken well in server components or for simple uses.
 const addDays = (date: Date, days: number): Date => {
   const result = new Date(date);
   result.setDate(result.getDate() + days);
@@ -369,8 +412,9 @@ const addDays = (date: Date, days: number): Date => {
 
 const isWeekend = (date: Date): boolean => {
   const day = date.getDay();
-  return day === 0 || day === 6; // Sunday or Saturday
+  return day === 0 || day === 6; 
 };
 
 
 export default BookingForm;
+
