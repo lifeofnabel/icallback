@@ -1,0 +1,38 @@
+
+{
+  "appName": "موعد للحجز",
+  "selectDate": "اختر تاريخاً",
+  "selectTimeSlot": "اختر وقتاً",
+  "phoneNumber": "رقم الهاتف",
+  "verificationCode": "رمز التحقق",
+  "sendCode": "أرسل الرمز",
+  "verifyCode": "تحقق من الرمز",
+  "bookAppointment": "احجز موعداً",
+  "bookingConfirmation": "تأكيد الحجز",
+  "appointmentBooked": "تم حجز موعدك بنجاح!",
+  "bookedFor": "محجوز لـ: {{date}} في {{time}}",
+  "phoneNumberEndingIn": "رقم الهاتف ينتهي بـ: ****{{lastFourDigits}}",
+  "close": "إغلاق",
+  "error": "خطأ",
+  "allSlotsBooked": "جميع المواعيد لهذا اليوم محجوزة.",
+  "slotBooked": "هذا الوقت محجوز بالفعل.",
+  "invalidPhoneNumber": "رقم هاتف غير صالح.",
+  "smsSent": "تم إرسال رمز التحقق إلى هاتفك.",
+  "verificationFailed": "فشل التحقق. حاول مرة اخرى.",
+  "bookingFailed": "فشل الحجز. حاول مرة اخرى.",
+  "phoneAlreadyHasBooking": "هذا الرقم لديه حجز فعال بالفعل.",
+  "slotUnavailable": "الوقت المختار لم يعد متاحاً.",
+  "loadingTimeSlots": "جاري تحميل الأوقات المتاحة...",
+  "noAvailableWeekdays": "لا توجد أيام عمل متاحة للحجز في المستقبل القريب.",
+  "pleaseSelectDateAndTime": "الرجاء اختيار التاريخ والوقت.",
+  "pleaseVerifyPhoneNumber": "يرجى التحقق من رقم هاتفك.",
+  "steps": {
+    "selectDateTime": "اختر التاريخ والوقت",
+    "verifyPhone": "تحقق من الهاتف",
+    "confirmBooking": "تأكيد الحجز"
+  },
+  "language": "لغة",
+  "german": "ألماني",
+  "arabic": "عربي",
+  "english": "إنجليزي"
+}

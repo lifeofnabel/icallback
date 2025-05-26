@@ -1,0 +1,38 @@
+
+{
+  "appName": "Maw'id Booking",
+  "selectDate": "Select a Date",
+  "selectTimeSlot": "Select a Time Slot",
+  "phoneNumber": "Phone Number",
+  "verificationCode": "Verification Code",
+  "sendCode": "Send Code",
+  "verifyCode": "Verify Code",
+  "bookAppointment": "Book Appointment",
+  "bookingConfirmation": "Booking Confirmation",
+  "appointmentBooked": "Your appointment has been successfully booked!",
+  "bookedFor": "Booked for: {{date}} at {{time}}",
+  "phoneNumberEndingIn": "Phone number ending in: ****{{lastFourDigits}}",
+  "close": "Close",
+  "error": "Error",
+  "allSlotsBooked": "All slots for this day are booked.",
+  "slotBooked": "This time slot is already booked.",
+  "invalidPhoneNumber": "Invalid phone number.",
+  "smsSent": "Verification code sent to your phone.",
+  "verificationFailed": "Verification failed. Please try again.",
+  "bookingFailed": "Booking failed. Please try again.",
+  "phoneAlreadyHasBooking": "This phone number already has an active booking.",
+  "slotUnavailable": "The selected time slot is no longer available.",
+  "loadingTimeSlots": "Loading time slots...",
+  "noAvailableWeekdays": "No available weekdays for booking in the near future.",
+  "pleaseSelectDateAndTime": "Please select a date and time.",
+  "pleaseVerifyPhoneNumber": "Please verify your phone number.",
+  "steps": {
+    "selectDateTime": "Select Date & Time",
+    "verifyPhone": "Verify Phone",
+    "confirmBooking": "Confirm Booking"
+  },
+  "language": "Language",
+  "german": "German",
+  "arabic": "Arabic",
+  "english": "English"
+}

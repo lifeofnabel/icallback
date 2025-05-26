@@ -1,0 +1,38 @@
+
+{
+  "appName": "Maw'id Terminbuchung",
+  "selectDate": "Datum auswählen",
+  "selectTimeSlot": "Uhrzeit auswählen",
+  "phoneNumber": "Telefonnummer",
+  "verificationCode": "Bestätigungscode",
+  "sendCode": "Code senden",
+  "verifyCode": "Code bestätigen",
+  "bookAppointment": "Termin buchen",
+  "bookingConfirmation": "Terminbestätigung",
+  "appointmentBooked": "Ihr Termin wurde erfolgreich gebucht!",
+  "bookedFor": "Gebucht für: {{date}} um {{time}}",
+  "phoneNumberEndingIn": "Telefonnummer endet mit: ****{{lastFourDigits}}",
+  "close": "Schließen",
+  "error": "Fehler",
+  "allSlotsBooked": "Alle Termine für diesen Tag sind ausgebucht.",
+  "slotBooked": "Diese Uhrzeit ist bereits gebucht.",
+  "invalidPhoneNumber": "Ungültige Telefonnummer.",
+  "smsSent": "Bestätigungscode wurde an Ihr Telefon gesendet.",
+  "verificationFailed": "Bestätigung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+  "bookingFailed": "Buchung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+  "phoneAlreadyHasBooking": "Diese Telefonnummer hat bereits eine aktive Buchung.",
+  "slotUnavailable": "Die gewählte Uhrzeit ist nicht mehr verfügbar.",
+  "loadingTimeSlots": "Lade Zeitfenster...",
+  "noAvailableWeekdays": "In naher Zukunft keine verfügbaren Wochentage für die Buchung.",
+  "pleaseSelectDateAndTime": "Bitte wählen Sie Datum und Uhrzeit aus.",
+  "pleaseVerifyPhoneNumber": "Bitte bestätigen Sie Ihre Telefonnummer.",
+  "steps": {
+    "selectDateTime": "Datum & Uhrzeit wählen",
+    "verifyPhone": "Telefon bestätigen",
+    "confirmBooking": "Buchung bestätigen"
+  },
+  "language": "Sprache",
+  "german": "Deutsch",
+  "arabic": "Arabisch",
+  "english": "Englisch"
+}
