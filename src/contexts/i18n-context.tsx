@@ -93,7 +93,9 @@ export const I18nProvider: React.FC<{ children: React.ReactNode; defaultLanguage
 
   const value = useMemo(() => ({ language, setLanguage, t, dir }), [language, setLanguage, t, dir]);
 
-  return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
+  return <I18nContext.Provider value={{ language, setLanguage, t, dir }}>
+    {children}
+  </I18nContext.Provider>;
 };
 
 export const useI18n = (): I18nContextType => {

@@ -1,6 +1,11 @@
 import type {NextConfig} from 'next';
 
+/** @type {import('next').NextConfig} */
+
 const nextConfig: NextConfig = {
+  output: 'export',
+  trailingSlash: true,
+
   /* config options here */
   typescript: {
     ignoreBuildErrors: true,
