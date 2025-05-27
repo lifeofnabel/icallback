@@ -32,7 +32,7 @@ const I18nContext = createContext<I18nContextType | undefined>(undefined);
 
 export const I18nProvider: React.FC<{ children: React.ReactNode; defaultLanguage?: Language }> = ({
   children,
-  defaultLanguage = 'de',
+  defaultLanguage = 'ar', // Default to Arabic
 }) => {
   const [language, setLanguageState] = useState<Language>(defaultLanguage);
 
@@ -48,7 +48,7 @@ export const I18nProvider: React.FC<{ children: React.ReactNode; defaultLanguage
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const storedLang = localStorage.getItem('maw-id-lang') as Language | null;
-      const initialLang = storedLang || defaultLanguage;
+      const initialLang = storedLang || defaultLanguage; // Use stored or the new default (Arabic)
       setLanguageState(initialLang);
       document.documentElement.lang = initialLang;
       document.documentElement.dir = initialLang === 'ar' ? 'rtl' : 'ltr';
@@ -58,20 +58,33 @@ export const I18nProvider: React.FC<{ children: React.ReactNode; defaultLanguage
 
   const t = useCallback((key: string, replacements?: Record<string, string | number>): string => {
     const keys = key.split('.');
-    let currentLangSet = locales[language] || locales.en; // Fallback to English if current language set is missing
+    let currentLangSet = locales[language] || locales.ar; // Fallback to Arabic if current language set is missing
     let current: string | Translations | undefined = currentLangSet;
 
     for (const k of keys) {
       if (typeof current === 'object' && current !== null && k in current) {
         current = current[k];
       } else {
-        // Fallback to English for the specific key if not found
-        current = locales.en;
-        for (const k_fb of keys) {
-            if (typeof current === 'object' && current !== null && k_fb in current) {
-                current = current[k_fb];
+        // Fallback to Arabic for the specific key if not found in current language
+        // Then fallback to English if not in Arabic either.
+        current = locales.ar; // Try Arabic first for fallback
+        let foundInArabic = true;
+        for (const k_fb_ar of keys) {
+            if (typeof current === 'object' && current !== null && k_fb_ar in current) {
+                current = current[k_fb_ar];
             } else {
-                return key; // Return key itself if not found even in English
+                foundInArabic = false;
+                break;
+            }
+        }
+        if (!foundInArabic) { // If not found in Arabic, try English
+            current = locales.en;
+            for (const k_fb_en of keys) {
+                 if (typeof current === 'object' && current !== null && k_fb_en in current) {
+                    current = current[k_fb_en];
+                } else {
+                    return key; // Return key itself if not found even in English
+                }
             }
         }
         break;

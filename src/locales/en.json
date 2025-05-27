@@ -26,6 +26,7 @@
   "noAvailableWeekdays": "No available weekdays for booking in the near future.",
   "pleaseSelectDateAndTime": "Please select a date and time.",
   "pleaseVerifyPhoneNumber": "Please verify your phone number.",
+  "firebaseServicesUnavailable": "Firebase services are currently unavailable. Please try again later or contact support.",
   "steps": {
     "selectDateTime": "Select Date & Time",
     "verifyPhone": "Verify Phone",
@@ -36,3 +37,4 @@
   "arabic": "Arabic",
   "english": "English"
 }
+

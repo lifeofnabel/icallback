@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { I18nProvider } from '@/contexts/i18n-context';
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from '@/components/ui/toaster';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -26,10 +26,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    // The lang and dir attributes will be set dynamically by I18nProvider on the client side
-    <html lang="de" dir="ltr"> 
+    <html lang="en" dir="ltr"> 
+      <head>
+        {/* Google reCAPTCHA v2 API script */}
+        {/* The render=explicit parameter is needed to manually render the captcha */}
+        <script src="https://www.google.com/recaptcha/api.js?render=explicit" async defer></script>
+      </head>
+
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <I18nProvider defaultLanguage="de">
+        <I18nProvider defaultLanguage="ar">
           {children}
           <Toaster />
         </I18nProvider>
