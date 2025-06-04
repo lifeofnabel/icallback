@@ -32,7 +32,7 @@ const I18nContext = createContext<I18nContextType | undefined>(undefined);
 
 export const I18nProvider: React.FC<{ children: React.ReactNode; defaultLanguage?: Language }> = ({
   children,
-  defaultLanguage = 'de',
+  defaultLanguage = 'ar',
 }) => {
   const [language, setLanguageState] = useState<Language>(defaultLanguage);
 

@@ -29,7 +29,7 @@ export default function RootLayout({
     // The lang and dir attributes will be set dynamically by I18nProvider on the client side
     <html lang="de" dir="ltr"> 
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <I18nProvider defaultLanguage="de">
+        <I18nProvider defaultLanguage="ar">
           {children}
           <Toaster />
         </I18nProvider>
