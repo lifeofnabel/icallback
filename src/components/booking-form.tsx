@@ -175,7 +175,31 @@ const BookingForm: React.FC = () => {
       setIsVerified(true);
       setUserId(userCredential.user.uid);
       toast({ title: t('verificationCode'), description: "Phone number verified successfully!" }); // TODO: Translate
-      setStep('confirmation'); 
+      await handleBookAppointment();
+    } catch (error: any) {
+      console.error("Error verifying OTP:", error);
+      toast({ variant: "destructive", title: t('error'), description: error.message || t('verificationFailed') });
+    } finally {
+      setIsVerifyingOtp(false);
+    }
+  };
+
+  const handleVerifyAndBookAppointment = async () => {
+    if (!window.confirmationResult) {
+      toast({ variant: "destructive", title: t('error'), description: t('verificationFailed') + " (No confirmation result)" });
+      return;
+    }
+    if (!otp || otp.length !== 6) {
+      toast({ variant: "destructive", title: t('error'), description: t('verificationFailed') });
+      return;
+    }
+    setIsVerifyingOtp(true);
+    try {
+      const userCredential = await window.confirmationResult.confirm(otp);
+      setIsVerified(true);
+      setUserId(userCredential.user.uid);
+      toast({ title: t('verificationCode'), description: "Phone number verified successfully!" });
+      await handleBookAppointment(); // Automatisch buchen
     } catch (error: any) {
       console.error("Error verifying OTP:", error);
       toast({ variant: "destructive", title: t('error'), description: error.message || t('verificationFailed') });
@@ -330,10 +354,13 @@ const BookingForm: React.FC = () => {
                     maxLength={6}
                     dir="ltr"
                   />
-                  <Button onClick={handleVerifyOtp} disabled={isVerifyingOtp || !otp} className="w-full">
-                    {isVerifyingOtp && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    {t('verifyCode')}
-                  </Button>
+
+                  {!isVerified && (
+                      <Button onClick={handleVerifyAndBookAppointment} disabled={isVerifyingOtp || !otp} className="w-full">
+                        {isVerifyingOtp && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        {t('verifyAndBook')}
+                      </Button>
+                  )}
                 </>
               )}
                <div id="recaptcha-container"></div>
@@ -342,7 +369,7 @@ const BookingForm: React.FC = () => {
                <Button variant="outline" onClick={() => setStep('selectDateTime')} className="w-full sm:w-auto">
                 <ArrowLeftIcon className={`w-4 h-4 ${dir === 'rtl' ? 'ml-2 transform rotate-180' : 'mr-2'}`} /> {t('steps.selectDateTime')}
               </Button>
-              <Button onClick={handleBookAppointment} disabled={!isVerified || isBooking} className="w-full sm:w-auto">
+              <Button onClick={handleBookAppointment} disabled={isBooking} className="w-full sm:w-auto">
                 {isBooking && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 <ShieldCheckIcon className="mr-2 h-4 w-4" /> {t('bookAppointment')}
               </Button>

@@ -1,9 +1,13 @@
 
+// @ts-ignore
 import type { Metadata } from 'next';
+// @ts-ignore
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { I18nProvider } from '@/contexts/i18n-context';
 import { Toaster } from "@/components/ui/toaster";
+import ClientFonts from "@/components/ui/ClientFonts";
+
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -27,13 +31,15 @@ export default function RootLayout({
 }>) {
   return (
     // The lang and dir attributes will be set dynamically by I18nProvider on the client side
-    <html lang="de" dir="ltr"> 
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+    <html lang="ar" dir="ltr">
+        <body>
         <I18nProvider defaultLanguage="ar">
-          {children}
-          <Toaster />
+            <ClientFonts geistSans={geistSans.variable} geistMono={geistMono.variable}>
+                {children}
+                <Toaster />
+            </ClientFonts>
         </I18nProvider>
-      </body>
+        </body>
     </html>
   );
 }

@@ -8,6 +8,8 @@ body {
 
 @layer base {
   :root {
+    --font-geist-sans: 'Geist', sans-serif;
+    --font-geist-mono: 'Geist Mono', monospace;
     --background: 0 0% 98%; /* #FAFAFA */
     --foreground: 0 0% 12.9%; /* #212121 */
     --card: 0 0% 98%; /* Similar to background */
